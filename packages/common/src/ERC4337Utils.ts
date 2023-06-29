@@ -3,7 +3,7 @@ import { defaultAbiCoder, hexConcat, hexlify, keccak256 } from 'ethers/lib/utils
 import { abi as entryPointAbi } from '@account-abstraction/contracts/artifacts/IEntryPoint.json'
 import { ethers } from 'ethers'
 import Debug from 'debug'
-import { ChainId, UserOperation } from '@biconomy/core-types'
+import { ChainId, UserOperation } from '@biconomy-devx/core-types'
 
 const debug = Debug('aa.utils')
 

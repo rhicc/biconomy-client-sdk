@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
-import { ChainId } from '@biconomy/core-types'
+import { ChainId } from '@biconomy-devx/core-types'
 import { BigNumberish } from 'ethers'
-import { IBundler } from '@biconomy/bundler'
-import { IPaymaster, PaymasterFeeQuote } from '@biconomy/paymaster'
+import { IBundler } from '@biconomy-devx/bundler'
+import { IPaymaster, PaymasterFeeQuote } from '@biconomy-devx/paymaster'
 
 export type EntrypointAddresses = {
   [address: string]: string
