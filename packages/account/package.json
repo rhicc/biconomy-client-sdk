@@ -1,14 +1,14 @@
 {
   "name": "@biconomy-devx/account",
-  "version": "1.0.19",
+  "version": "1.1.0",
   "description": "This package provides apis for ERC-4337 based smart account implementations",
   "main": "./dist/src/index.js",
   "typings": "./dist/src/index.d.ts",
   "keywords": [
     "Ethereum",
-    "Smart Account", 
+    "Smart Account",
     "ERC-4337",
-    "Account Abstraction", 
+    "Account Abstraction",
     "Smart Contract Wallets",
     "Biconomy",
     "SDK"
@@ -35,10 +35,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@biconomy-devx/core-types": "*",
-    "@biconomy-devx/common": "*",
-    "@biconomy-devx/bundler": "*",
-    "@biconomy-devx/paymaster": "*",
-    "@biconomy-devx/node-client": "*"
+    "@biconomy-devx/bundler": "^1.0.20",
+    "@biconomy-devx/common": "^1.1.0",
+    "@biconomy-devx/core-types": "^1.1.0",
+    "@biconomy-devx/node-client": "^1.0.20",
+    "@biconomy-devx/paymaster": "^1.1.0"
   }
 }

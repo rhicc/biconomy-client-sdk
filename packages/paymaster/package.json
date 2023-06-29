@@ -1,6 +1,6 @@
 {
   "name": "@biconomy-devx/paymaster",
-  "version": "1.0.19",
+  "version": "1.1.0",
   "description": "Biconomy Paymaster to interact with Paymaster Services that interacts with ( veriying and token ) paymasters",
   "main": "./dist/src/index.js",
   "typings": "./dist/src/index.d.ts",
@@ -8,7 +8,7 @@
     "Ethereum",
     "Veriying Paymaster",
     "Token Paymaster",
-    "ERC4337", 
+    "ERC4337",
     "Gasless Transaction",
     "Biconomy",
     "SDK"
@@ -38,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@biconomy-devx/core-types": "*",
-    "@biconomy-devx/common": "*"
+    "@biconomy-devx/common": "^1.1.0",
+    "@biconomy-devx/core-types": "^1.1.0"
   }
 }
