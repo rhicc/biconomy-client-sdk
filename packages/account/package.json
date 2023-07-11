@@ -6,9 +6,9 @@
   "typings": "./dist/src/index.d.ts",
   "keywords": [
     "Ethereum",
-    "Smart Account", 
+    "Smart Account",
     "ERC-4337",
-    "Account Abstraction", 
+    "Account Abstraction",
     "Smart Contract Wallets",
     "Biconomy",
     "SDK"
@@ -35,10 +35,14 @@
     "access": "public"
   },
   "devDependencies": {
-    "@biconomy/core-types": "*",
-    "@biconomy/common": "*",
     "@biconomy/bundler": "*",
+    "@biconomy/common": "*",
+    "@biconomy/core-types": "*",
+    "@biconomy/node-client": "*",
     "@biconomy/paymaster": "*",
-    "@biconomy/node-client": "*"
+    "@types/elliptic": "^6.4.14"
+  },
+  "dependencies": {
+    "elliptic": "^6.5.4"
   }
 }
