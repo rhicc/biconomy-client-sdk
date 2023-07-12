@@ -99,7 +99,7 @@ export abstract class SmartAccount implements ISmartAccount {
       return userOp
     }
 
-    // if (!this.bundler) {
+    if (!this.bundler) {
     if (!this.provider) throw new Error('Provider is not present for making rpc calls')
     // if no bundler url is provided run offchain logic to assign following values of UserOp
     // maxFeePerGas, maxPriorityFeePerGas, verificationGasLimit, callGasLimit, preVerificationGas
@@ -125,33 +125,33 @@ export abstract class SmartAccount implements ISmartAccount {
         data: userOp.callData
       }))
     userOp.preVerificationGas = userOp.preVerificationGas ?? this.getPreVerificationGas(userOp)
-    // } else {
-    //   // Making call to bundler to get gas estimations for userOp
-    //   const {
-    //     callGasLimit,
-    //     verificationGasLimit,
-    //     preVerificationGas,
-    //     maxFeePerGas,
-    //     maxPriorityFeePerGas
-    //   } = await this.bundler.estimateUserOpGas(userOp)
-    //   if (
-    //     !userOp.maxFeePerGas &&
-    //     !userOp.maxPriorityFeePerGas &&
-    //     (!maxFeePerGas || !maxPriorityFeePerGas)
-    //   ) {
-    //     const feeData = await this.provider.getFeeData()
-    //     userOp.maxFeePerGas =
-    //       feeData.maxFeePerGas ?? feeData.gasPrice ?? (await this.provider.getGasPrice())
-    //     userOp.maxPriorityFeePerGas =
-    //       feeData.maxPriorityFeePerGas ?? feeData.gasPrice ?? (await this.provider.getGasPrice())
-    //   } else {
-    //     userOp.maxFeePerGas = userOp.maxFeePerGas ?? maxFeePerGas
-    //     userOp.maxPriorityFeePerGas = userOp.maxPriorityFeePerGas ?? maxPriorityFeePerGas
-    //   }
-    //   userOp.verificationGasLimit = userOp.verificationGasLimit ?? verificationGasLimit
-    //   userOp.callGasLimit = userOp.callGasLimit ?? callGasLimit
-    //   userOp.preVerificationGas = userOp.preVerificationGas ?? preVerificationGas
-    // }
+    } else {
+      // Making call to bundler to get gas estimations for userOp
+      const {
+        callGasLimit,
+        verificationGasLimit,
+        preVerificationGas,
+        maxFeePerGas,
+        maxPriorityFeePerGas
+      } = await this.bundler.estimateUserOpGas(userOp)
+      if (
+        !userOp.maxFeePerGas &&
+        !userOp.maxPriorityFeePerGas &&
+        (!maxFeePerGas || !maxPriorityFeePerGas)
+      ) {
+        const feeData = await this.provider.getFeeData()
+        userOp.maxFeePerGas =
+          feeData.maxFeePerGas ?? feeData.gasPrice ?? (await this.provider.getGasPrice())
+        userOp.maxPriorityFeePerGas =
+          feeData.maxPriorityFeePerGas ?? feeData.gasPrice ?? (await this.provider.getGasPrice())
+      } else {
+        userOp.maxFeePerGas = userOp.maxFeePerGas ?? maxFeePerGas
+        userOp.maxPriorityFeePerGas = userOp.maxPriorityFeePerGas ?? maxPriorityFeePerGas
+      }
+      userOp.verificationGasLimit = userOp.verificationGasLimit ?? verificationGasLimit
+      userOp.callGasLimit = userOp.callGasLimit ?? callGasLimit
+      userOp.preVerificationGas = userOp.preVerificationGas ?? preVerificationGas
+    }
     return userOp
   }
 
