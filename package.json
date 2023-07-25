@@ -31,6 +31,7 @@
   },
   "author": "Biconomy (https://biconomy.io)",
   "devDependencies": {
+    "@types/elliptic": "^6.4.14",
     "@types/jest": "^28.1.7",
     "@types/mocha": "^9.1.1",
     "eslint-plugin-import": "^2.26.0",
