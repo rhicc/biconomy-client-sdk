@@ -103,6 +103,10 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
     return this
   }
 
+  getNodeClient(){
+    return this.nodeClient
+  }
+
   private isInitialized(): boolean {
     if (!this._isInitialised)
       throw new Error(

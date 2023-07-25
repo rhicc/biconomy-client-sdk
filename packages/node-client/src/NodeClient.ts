@@ -100,6 +100,20 @@ class NodeClient implements INodeClient {
     })
   }
 
+  async getSmartAccountsByPassKey(
+    smartAccountByOwnerDto: SmartAccountByOwnerDto
+  ): Promise<SmartAccountsResponse> {
+    return sendRequest({
+      url: `${
+        this.#txServiceBaseUrl
+      }/smart-accounts/pass-key`,
+      method: HttpMethod.Post,
+      body:{
+        smartAccountByOwnerDto
+      }
+    })
+  }
+
   async getAllTokenBalances(balancesDto: BalancesDto): Promise<BalancesResponse> {
     return sendRequest({
       url: `${this.#txServiceBaseUrl}/smart-accounts/balances`,

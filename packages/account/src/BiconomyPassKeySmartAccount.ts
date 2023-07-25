@@ -6,13 +6,11 @@ import {
 import { UserOperation } from '@biconomy/core-types'
 import { IBiconomySmartAccount } from 'interfaces/IBiconomySmartAccount'
 import { BiconomySmartAccount } from './BiconomySmartAccount'
+import { SmartAccountByOwnerDto, SmartAccountsResponse } from '@biconomy/node-client'
 
 export class BiconomyPassKeySmartAccount
     extends BiconomySmartAccount
     implements IBiconomySmartAccount {
-    //   private pubX!: string
-    //   private pubY!: string
-    //   private keyId!: string
     pubKeyX = '0xa736f00b7d22e878a2fe3836773219ddac3c9b2bdcb066b3c480232262b410ad'
     pubKeyY = '0xd238d6f412bbf0334a592d4cba3862d28853f9f27d4ff6a9546de355761eb0f8'
     KeyId = 'test'
@@ -21,15 +19,11 @@ export class BiconomyPassKeySmartAccount
         super(biconomySmartAccountConfig)
     }
 
-    async generatePasskeyPair() {
-        const EC = elliptic.ec;
-        const ec = new EC('p256');
-        const keyPair = ec.genKeyPair()
-        return {
-            pubKey: keyPair.getPublic('hex'),
-            priKey: keyPair.getPrivate('hex')
-        }
-    }
+    async getSmartAccountsByOwner(
+        smartAccountByOwnerDto: SmartAccountByOwnerDto
+      ): Promise<SmartAccountsResponse> {
+        return this.getNodeClient().getSmartAccountsByPassKey(smartAccountByOwnerDto)
+      }
 
     async signUserOp(userOp: Partial<UserOperation>): Promise<UserOperation> {
         userOp = await super.signUserOp(userOp)

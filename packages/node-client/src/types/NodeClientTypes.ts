@@ -52,9 +52,13 @@ export type WhiteListSignatureResponse = {
 
 export type SmartAccountByOwnerDto = {
   chainId: number
-  owner: string
+  owner?: string
   index: number
+  pubKeyX?: string
+  pubKeyY?: string
+  keyId?: string
 }
+
 
 export type TokenByChainIdAndAddressDto = {
   chainId: number
