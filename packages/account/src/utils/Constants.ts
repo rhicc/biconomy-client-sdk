@@ -14,7 +14,7 @@ export const BICONOMY_FACTORY_ADDRESSES: BiconomyFactories = {
 }
 
 export const BICONOMY_IMPLEMENTATION_ADDRESSES: BiconomyImplementation = {
-  '0x00006b7e42e01957da540dc6a8f7c30c4d816af5': 'V1_0_0',
+  '0x0000cc4a2bc176001e72a353f7660a7f59d78628': 'V1_0_0',
   '0xf1080f5f874ea8170e423738791e0e9a8aad87fd': 'V2_0_0'
 }
 

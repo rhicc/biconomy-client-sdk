@@ -3,6 +3,8 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import {
   EntryPoint_v100,
   EntryPoint_v100__factory,
+  EntryPoint_v200,
+  EntryPoint_v200__factory,
   SmartAccount_v100,
   SmartAccount_v200,
   SmartAccountFactory_v100,
@@ -30,7 +32,7 @@ export function getSAProxyContract(
         return SmartAccount_v100__factory.connect(contractAddress, provider)
       }
       break
-    case 'V1_0_0':
+    case 'V2_0_0':
       if (smartAccountType === SmartAccountType.BICONOMY) {
         return SmartAccount_v200__factory.connect(contractAddress, provider)
       }
@@ -48,11 +50,13 @@ export function getSAFactoryContract(
   switch (version) {
     case 'V1_0_0':
       if (smartAccountType === SmartAccountType.BICONOMY) {
+        console.log('getSAFactoryContract V1_0_0');
         return SmartAccountFactory_v100__factory.connect(contractAddress, provider)
       }
       break
     case 'V2_0_0':
       if (smartAccountType === SmartAccountType.BICONOMY) {
+        console.log('getSAFactoryContract V2_0_0');
         return SmartAccountFactory_v200__factory.connect(contractAddress, provider)
       }
       break
@@ -71,6 +75,11 @@ export function getEntryPointContract(
     case 'V0_0_5':
       if (smartAccountType === SmartAccountType.BICONOMY) {
         return EntryPoint_v100__factory.connect(contractAddress, provider)
+      }
+      break
+    case 'V0_0_6':
+      if (smartAccountType === SmartAccountType.BICONOMY) {
+        return EntryPoint_v200__factory.connect(contractAddress, provider)
       }
       break
     default:

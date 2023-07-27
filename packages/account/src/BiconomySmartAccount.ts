@@ -11,6 +11,7 @@ import {
   getSAProxyContract
 } from '@biconomy/common'
 import {
+  Mode,
   BiconomySmartAccountConfig,
   Overrides,
   BiconomyTokenPaymasterRequest,
@@ -64,12 +65,16 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
     }
     this.provider = new JsonRpcProvider(_rpcUrl)
     this.nodeClient = new NodeClient({ txServiceUrl: nodeClientUrl ?? NODE_CLIENT_URL })
-    this.signer = signer
+
+    if (signer)
+      this.signer = signer
 
     if (paymaster) {
       this.paymaster = paymaster
     }
+
     if (bundler) this.bundler = bundler
+
   }
   /**
    * @description This function will initialise BiconomyAccount class state
@@ -85,11 +90,11 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
 
       if (!_accountIndex) _accountIndex = 0
       this.isProviderDefined()
-      this.isSignerDefined()
+      // this.isSignerDefined()
 
       if (signerAddress) {
         this.owner = signerAddress
-      } else {
+      } else if (this.signer) {
         this.owner = await this.signer.getAddress()
       }
       this.chainId = await this.provider.getNetwork().then((net) => net.chainId)
@@ -103,7 +108,23 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
     return this
   }
 
-  getNodeClient(){
+  async signUserOp(userOp: Partial<UserOperation>): Promise<UserOperation> {
+    if (this.biconomySmartAccountConfig.mode === Mode.PASS_KEY) {
+      throw new Error('Signing can only be done at FE for Passkeys')
+    }
+    userOp = await super.signUserOp(userOp)
+    if (this.biconomySmartAccountConfig.mode === Mode.NON_ECDSA) {
+      return userOp as UserOperation
+    }
+    let signatureWithModuleAddress = ethers.utils.defaultAbiCoder.encode(
+      ['bytes', 'address'],
+      [userOp.signature, this.getSmartAccountInfo().ecdsaModuleAddress]
+    )
+    userOp.signature = signatureWithModuleAddress
+    return userOp as UserOperation
+  }
+
+  getNodeClient() {
     return this.nodeClient
   }
 
@@ -120,9 +141,10 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
       throw new Error(
         'Could not find attached implementation address against your smart account. Please raise an issue on https://github.com/bcnmy/biconomy-client-sdk for further investigation.'
       )
+    console.log('proxy version ', BICONOMY_IMPLEMENTATION_ADDRESSES[this.smartAccountInfo.implementationAddress]);  
     const proxyInstanceDto = {
       smartAccountType: SmartAccountType.BICONOMY,
-      version: BICONOMY_IMPLEMENTATION_ADDRESSES[this.address],
+      version: BICONOMY_IMPLEMENTATION_ADDRESSES[this.smartAccountInfo.implementationAddress],
       contractAddress: this.address,
       provider: this.provider
     }
@@ -136,6 +158,7 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
       throw new Error(
         'Could not find attached entrypoint address against your smart account. Please raise an issue on https://github.com/bcnmy/biconomy-client-sdk for further investigation.'
       )
+    console.log('EP version ', ENTRYPOINT_ADDRESSES[_entryPointAddress]);  
     const entryPointInstanceDto = {
       smartAccountType: SmartAccountType.BICONOMY,
       version: ENTRYPOINT_ADDRESSES[_entryPointAddress],
@@ -151,6 +174,7 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
       throw new Error(
         'Could not find attached factory address against your smart account. Please raise an issue on https://github.com/bcnmy/biconomy-client-sdk for further investigation.'
       )
+    console.log('factory version ', BICONOMY_FACTORY_ADDRESSES[_factoryAddress]);  
     const factoryInstanceDto = {
       smartAccountType: SmartAccountType.BICONOMY,
       version: BICONOMY_FACTORY_ADDRESSES[_factoryAddress],
@@ -173,23 +197,51 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
     await this.setInitCode(this.accountIndex)
   }
 
+  setSmartAcountInfo(_smartAccountInfo: ISmartAccount) {
+    this.smartAccountInfo = _smartAccountInfo
+  }
+
   async getSmartAccountAddress(accountIndex = 0): Promise<string> {
     try {
-      this.isSignerDefined()
-      let smartAccountsList: ISmartAccount[] = (
-        await this.getSmartAccountsByOwner({
-          chainId: this.chainId,
-          owner: this.owner,
-          index: accountIndex
-        })
-      ).data
-      if (!smartAccountsList)
+      let smartAccountsList: ISmartAccount[] = []
+      // this.isSignerDefined()
+      if (this.biconomySmartAccountConfig.mode === Mode.PASS_KEY) {
+        smartAccountsList = (
+          await this.getSmartAccountsByOwner({
+            chainId: this.chainId,
+            pubKeyX: this.biconomySmartAccountConfig.pubKeyX,
+            pubKeyY: this.biconomySmartAccountConfig.pubKeyY,
+            keyId: this.biconomySmartAccountConfig.keyId,
+            index: accountIndex
+          })
+        ).data
+      } else if (this.biconomySmartAccountConfig.mode === Mode.ECDSA){
+        smartAccountsList = (
+          await this.getSmartAccountsByOwnerAndIndex({
+            chainId: this.chainId,
+            owner: this.owner,
+            index: accountIndex
+          })
+        ).data
+      }
+      else if (this.biconomySmartAccountConfig.mode === Mode.NON_ECDSA){
+        smartAccountsList = (
+          await this.getSmartAccountsByOwner({
+            chainId: this.chainId,
+            owner: this.owner,
+            index: accountIndex
+          })
+        ).data
+      }
+      console.log(smartAccountsList);
+      
+      if (smartAccountsList.length === 0)
         throw new Error(
           'Failed to get smart account address. Please raise an issue on https://github.com/bcnmy/biconomy-client-sdk for further investigation.'
         )
-      smartAccountsList = smartAccountsList.filter((smartAccount: ISmartAccount) => {
-        return accountIndex === smartAccount.index
-      })
+      // smartAccountsList = smartAccountsList.filter((smartAccount: ISmartAccount) => {
+      //   return accountIndex === smartAccount.index
+      // })
       if (smartAccountsList.length === 0)
         throw new Error(
           'Failed to get smart account address. Please raise an issue on https://github.com/bcnmy/biconomy-client-sdk for further investigation.'
@@ -203,13 +255,55 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
   }
 
   protected async setInitCode(accountIndex = 0): Promise<string> {
-    this.initCode = ethers.utils.hexConcat([
-      this.factory.address,
-      this.factory.interface.encodeFunctionData('deployCounterFactualAccount', [
-        this.owner,
-        ethers.BigNumber.from(accountIndex)
+    if (this.biconomySmartAccountConfig.mode === Mode.NON_ECDSA) {
+      console.log('generating non ecdsa code');
+      console.log('this.owner', this.owner)
+      
+      this.initCode = ethers.utils.hexConcat([
+        this.factory.address,
+        this.factory.interface.encodeFunctionData('deployCounterFactualAccount', [
+          this.owner,
+          ethers.BigNumber.from(accountIndex)
+        ])
       ])
-    ])
+    }
+    if (this.biconomySmartAccountConfig.mode === Mode.ECDSA) {
+      const ecdsaModuleRegistryAbi = 'function initForSmartAccount(address owner)'
+      const ecdsaModuleRegistryInterface = new ethers.utils.Interface([ecdsaModuleRegistryAbi])
+      const ecdsaOwnershipInitData = ecdsaModuleRegistryInterface.encodeFunctionData(
+        'initForSmartAccount',
+        [this.owner]
+      )
+      this.initCode = ethers.utils.hexConcat([
+        this.factory.address,
+        this.factory.interface.encodeFunctionData('deployCounterFactualAccount', [
+          this.getSmartAccountInfo().ecdsaModuleAddress,
+          ecdsaOwnershipInitData,
+          accountIndex
+        ])
+      ])
+    }
+    if (this.biconomySmartAccountConfig.mode === Mode.PASS_KEY) {
+      const factoryInstance = this.getFactoryInstance()
+      const passKeyModuleRegistryAbi = 'function initForSmartAccount(uint256 _pubKeyX, uint256 _pubKeyY, string calldata _keyId)'
+      const passKeyModuleRegistryInterface = new ethers.utils.Interface([passKeyModuleRegistryAbi])
+      const passKeyOwnershipInitData = passKeyModuleRegistryInterface.encodeFunctionData(
+        'initForSmartAccount',
+        [
+          this.biconomySmartAccountConfig.pubKeyX,
+          this.biconomySmartAccountConfig.pubKeyY,
+          this.biconomySmartAccountConfig.keyId
+        ]
+      )
+      this.initCode = ethers.utils.hexConcat([
+        factoryInstance.address,
+        factoryInstance.interface.encodeFunctionData('deployCounterFactualAccount', [
+          this.getSmartAccountInfo().passKeyModuleAddress,
+          passKeyOwnershipInitData,
+          accountIndex
+        ])
+      ])
+    }
     return this.initCode
   }
   /**
@@ -260,7 +354,16 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
   }
 
   getDummySignature(): string {
-    return '0x73c3ac716c487ca34bb858247b5ccf1dc354fbaabdd089af3b2ac8e78ba85a4959a2d76250325bd67c11771c31fccda87c33ceec17cc0de912690521bb95ffcb1b'
+    if (this.biconomySmartAccountConfig.mode === Mode.NON_ECDSA)
+      return '0x73c3ac716c487ca34bb858247b5ccf1dc354fbaabdd089af3b2ac8e78ba85a4959a2d76250325bd67c11771c31fccda87c33ceec17cc0de912690521bb95ffcb1b'
+    else if (this.biconomySmartAccountConfig.mode === Mode.ECDSA) {
+      return '0x0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000d9cf3caaa21db25f16ad6db43eb9932ab77c8e76000000000000000000000000000000000000000000000000000000000000004181d4b4981670cb18f99f0b4a66446df1bf5b204d24cfcb659bf38ba27a4359b5711649ec2423c5e1247245eba2964679b6a1dbb85c992ae40b9b00c6935b02ff1b00000000000000000000000000000000000000000000000000000000000000'
+    }
+    else if (this.biconomySmartAccountConfig.mode === Mode.PASS_KEY) {
+      return '0x2353579e068141b01681c6b70254e36e0ebb2e80086f4b87fe272bdfd23cd73e4249f1c3488de07372688951982d5301654807f86b8f0d0605b2c7395c05fcea9071f2595014c8ce7a6d5ea01d84d7b0688ef5ddf5fe707e7d9542a288f1ec2400000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000247b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a4222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a35313733222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e676c2f796162506578227d00000000000000000000000000000000000000000000000000000000'
+    } else {
+      throw 'Invalid Mode Supplied'
+    }
   }
 
   getDummyPaymasterData(): string {
@@ -462,6 +565,12 @@ export class BiconomySmartAccount extends SmartAccount implements IBiconomySmart
     smartAccountByOwnerDto: SmartAccountByOwnerDto
   ): Promise<SmartAccountsResponse> {
     return this.nodeClient.getSmartAccountsByOwner(smartAccountByOwnerDto)
+  }
+
+  async getSmartAccountsByOwnerAndIndex(
+    smartAccountByOwnerDto: SmartAccountByOwnerDto
+  ): Promise<SmartAccountsResponse> {
+    return this.nodeClient.getSmartAccountsByOwnerAndIndex(smartAccountByOwnerDto)
   }
 
   async getTransactionsByAddress(

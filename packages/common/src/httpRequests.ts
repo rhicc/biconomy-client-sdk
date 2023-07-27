@@ -25,6 +25,10 @@ export async function sendRequest<T>({ url, method, body, headers = {} }: HttpRe
     },
     body: JSON.stringify(body)
   })
+  console.log(url);
+  console.log(JSON.stringify(body));
+  
+  
 
   let jsonResponse
   try {

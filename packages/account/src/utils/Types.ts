@@ -27,14 +27,24 @@ export type BiconomyTokenPaymasterRequest = {
   maxApproval?: boolean
 }
 
+export enum Mode {
+  ECDSA = 'ECDSA',
+  NON_ECDSA = 'NON_ECDSA',
+  PASS_KEY = 'PASS_KEY'
+}
+
 export type BiconomySmartAccountConfig = {
-  signer: Signer
+  signer?: Signer
+  pubKeyX?: string
+  pubKeyY?: string
+  keyId?: string
   rpcUrl?: string
   chainId: ChainId
   entryPointAddress?: string
   bundler?: IBundler
   paymaster?: IPaymaster
-  nodeClientUrl?: string
+  nodeClientUrl?: string,
+  mode: Mode
 }
 
 export type Overrides = {

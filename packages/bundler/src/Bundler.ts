@@ -51,6 +51,12 @@ export class Bundler implements IBundler {
   async estimateUserOpGas(userOp: UserOperation): Promise<UserOpGasResponse> {
     // expected dummySig and possibly dummmy paymasterAndData should be provided by the caller
     // bundler doesn't know account and paymaster implementation
+    userOp.verificationGasLimit= 382748
+    userOp.callGasLimit= 1012125
+    userOp.preVerificationGas= 51488
+    userOp.paymasterAndData= '0x'
+    userOp.maxFeePerGas= '1500000032'
+    userOp.maxPriorityFeePerGas= '1500000000'
     userOp = transformUserOP(userOp)
     Logger.log('userOp sending for fee estimate ', userOp)
 

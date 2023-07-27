@@ -67,6 +67,10 @@ interface INodeClient {
     smartAccountByOwnerDto: SmartAccountByOwnerDto
   ): Promise<SmartAccountsResponse>
 
+  getSmartAccountsByOwnerAndIndex(
+    smartAccountByOwnerDto: SmartAccountByOwnerDto
+  ): Promise<SmartAccountsResponse> 
+
   
   getSmartAccountsByPassKey(
     smartAccountByOwnerDto: SmartAccountByOwnerDto

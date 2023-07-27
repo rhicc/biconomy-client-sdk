@@ -91,6 +91,18 @@ class NodeClient implements INodeClient {
   async getSmartAccountsByOwner(
     smartAccountByOwnerDto: SmartAccountByOwnerDto
   ): Promise<SmartAccountsResponse> {
+    const { chainId, owner } = smartAccountByOwnerDto
+    return sendRequest({
+      url: `${
+        this.#txServiceBaseUrl
+      }/smart-accounts/chainId/${chainId}/owner/${owner}`,
+      method: HttpMethod.Get
+    })
+  }
+
+  async getSmartAccountsByOwnerAndIndex(
+    smartAccountByOwnerDto: SmartAccountByOwnerDto
+  ): Promise<SmartAccountsResponse> {
     const { chainId, owner, index } = smartAccountByOwnerDto
     return sendRequest({
       url: `${
@@ -108,9 +120,7 @@ class NodeClient implements INodeClient {
         this.#txServiceBaseUrl
       }/smart-accounts/pass-key`,
       method: HttpMethod.Post,
-      body:{
-        smartAccountByOwnerDto
-      }
+      body: smartAccountByOwnerDto
     })
   }
 

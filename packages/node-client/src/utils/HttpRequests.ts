@@ -22,6 +22,10 @@ export async function sendRequest<T>({ url, method, body }: HttpRequest): Promis
     },
     body: JSON.stringify(body)
   })
+  console.log(' url ', url);
+  console.log(' body ', JSON.stringify(body));
+  
+  
 
   let jsonResponse
   try {
