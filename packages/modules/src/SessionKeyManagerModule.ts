@@ -56,6 +56,8 @@ export class SessionKeyManagerModule extends BaseValidationModule {
     this.merkleTree = new MerkleTree([hexZeroPad('0x00', 32)], keccak256, { hashLeaves: false })
   }
 
+  // init() ?
+
   // Session Key Manager Module Address
   getAddress(): string {
     return this.moduleAddress
@@ -65,7 +67,7 @@ export class SessionKeyManagerModule extends BaseValidationModule {
     throw new Error('Method not implemented.')
   }
 
-  // TODO
+  // TODO // check with Fillip
   getDummySignature(): string {
     return '0x0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000d9cf3caaa21db25f16ad6db43eb9932ab77c8e76000000000000000000000000000000000000000000000000000000000000004181d4b4981670cb18f99f0b4a66446df1bf5b204d24cfcb659bf38ba27a4359b5711649ec2423c5e1247245eba2964679b6a1dbb85c992ae40b9b00c6935b02ff1b00000000000000000000000000000000000000000000000000000000000000'
   }
@@ -75,36 +77,76 @@ export class SessionKeyManagerModule extends BaseValidationModule {
     throw new Error('Method not implemented.')
   }
 
+  /* createSessionData(sessionInfo: CreateSessionDto): Promise<Transaction> {
+
+     validUntil: number
+     validAfter: number
+     sessionValidationModuleAddress: string
+     // sessionPublicKey: string
+     sessionKeyData: string
+
+     // access current merkle tree (all leaves)
+     // add new leaf
+     // recalculate merkle root
+
+     // add leaf in storage with pending status
+
+     // create tx : to(session manager module address, value=0, data setMerkleRoot(<above hash>))
+     // optionally also return i. leaf ii. merkle root (to be updated) iii. session id (default or custom)
+
+  }*/
+
+  // methods to access local storage reads and writes -> updateLeafData() 
+
+  // then call account.buildUserOp()
+
   async createSession(): Promise<string> {
     const sessionKeyModuleAbi = 'function setMerkleRoot(bytes32 _merkleRoot)'
     const sessionKeyModuleInterface = new ethers.utils.Interface([sessionKeyModuleAbi])
     const setMerkleRootData = sessionKeyModuleInterface.encodeFunctionData('setMerkleRoot', [
-      await this.getMerkleProof()
+      await this.getMerkleRoot()
     ])
     return setMerkleRootData
   }
 
-  async signUserOp(userOp: UserOperation): Promise<string> {
+  // optionally accepts signer?
+
+  async signUserOp(userOp: UserOperation, sessionSigner?: Signer, sessionId?: string): Promise<string> {
     const userOpHash = getUserOpHash(userOp, this.entryPointAddress, this.chainId)
     //
-    const signature = await this.sessionSigner.signMessage(arrayify(userOpHash))
+    const signature = await sessionSigner.signMessage(arrayify(userOpHash))
     // add validator module address to the signature
 
-    // Review // Should be done on account side
-    const signatureWithModuleAddress = ethers.utils.defaultAbiCoder.encode(
-      ['bytes', 'address'],
-      [signature, this.getAddress()]
-    )
-    userOp.signature = signatureWithModuleAddress
-    // TODO: return userOp or signatureWithModuleAddress?
-    return signatureWithModuleAddress
+
+    // Require below info now
+    /**
+      validUntil, 
+      validAfter, 
+      sessionValidationModuleAddress, 
+      sessionKeyData, 
+
+      merkleProof, 
+     */
+
+
+    // Fetch leaf based on sessionValidationModuleAddress and session pub key (from signer) 
+    // session signer and leaf can also be fetched from id ? 
+
+    // create leaf (fetch from storage / using info from storage)
+
+    // using the leaf get proof using merkleTree.getHexProof()
+
+    // make padded sig
+    
+    // return moduleSignature
+    return '0x'
   }
 
   async signMessage(message: Bytes | string): Promise<string> {
     return await this.sessionSigner.signMessage(message)
   }
 
-  async getMerkleProof(): Promise<string> {
+  async getMerkleRoot(): Promise<string> {
     // TODO: use nodeclient / local storage to get merkle proof
 
     // const merkleProofData = await this.nodeClient.getMerkleProof(
