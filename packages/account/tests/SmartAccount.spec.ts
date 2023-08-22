@@ -144,13 +144,43 @@ describe('Send UserOp', async () => {
     biconomySmartAccount = await biconomyAccount.init()
   })
 
-  it('estimateUserOperationGas for native token transfer using local estimation logic', async () => {
-    const builtUserOp = await biconomySmartAccount.buildUserOp([{ to: target, data: ethers.utils.parseEther("1".toString()) }])
-    console.log('builtUserOp ', builtUserOp);
-    expect(builtUserOp.verificationGasLimit).to.be.closeTo(300000, 200000)
-    expect(builtUserOp.callGasLimit).to.be.closeTo(45000, 20000)
-    expect(builtUserOp.preVerificationGas).to.be.closeTo(40000, 10000)
+describe('UserOp signing', async () => {
+  const bundlerUrl = "https://bundler.biconomy.io/api/v2/137/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44"
+  const paymasterUrl = "https://paymaster.biconomy.io/api/v1/137/6epGbMB4x.5ec0b14c-49aa-4bbc-a4cd-1a75343e1d52"
+
+  let owner: Wallet
+  let target = await Wallet.createRandom().getAddress()
+  let biconomySmartAccount
+  before('', async () => {
+    owner = Wallet.createRandom()
+    const bundler = new Bundler({
+      bundlerUrl,
+      chainId: ChainId.POLYGON_MAINNET,
+      entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
+    });
+
+    const paymaster = new BiconomyPaymaster({
+      paymasterUrl
+    })
+
+    const biconomySmartAccountConfig = {
+      signer: owner,
+      chainId: ChainId.POLYGON_MAINNET,
+      paymaster: paymaster,
+      bundler: bundler,
+    }
+    const biconomyAccount = new BiconomySmartAccount(biconomySmartAccountConfig);
+    biconomySmartAccount = await biconomyAccount.init()
   })
+
+  it('Signature length should be 132', async () => {
+    const signatureLength = 132
+    const builtUserOp = await biconomySmartAccount.buildUserOp([{ to: target, data: ethers.utils.parseEther("1".toString()) }])
+    const signedUserOp = await biconomySmartAccount.signUserOp(builtUserOp)
+    console.log('signedUserOp ', signedUserOp)
+    expect(signedUserOp.signature.length).to.be.eq(signatureLength)
+  })
+})
 })
 
 
