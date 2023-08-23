@@ -1,4 +1,4 @@
-import { Logger, getUserOpHash } from '@biconomy/common'
+import { Logger, getUserOpHash } from '@biconomy-devx/common'
 import { EntryPoint, EntryPoint__factory } from '@account-abstraction/contracts'
 import { Signer, ethers } from 'ethers'
 import { Bytes, BytesLike, hexConcat, arrayify, hexZeroPad, hexlify } from 'ethers/lib/utils'
@@ -7,7 +7,7 @@ import {
   ECDSAOwnershipValidationModuleConfig,
   ModuleVersion
 } from './utils/Types'
-import { UserOperation, ChainId } from '@biconomy/core-types'
+import { UserOperation, ChainId } from '@biconomy-devx/core-types'
 import {
   DEFAULT_ENTRYPOINT_ADDRESS,
   ECDSA_OWNERSHIP_MODULE_ADDRESSES_BY_VERSION

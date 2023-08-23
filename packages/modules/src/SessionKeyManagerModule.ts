@@ -1,6 +1,6 @@
 import { Signer, ethers } from 'ethers'
 import MerkleTree from 'merkletreejs'
-import { getUserOpHash, NODE_CLIENT_URL } from '@biconomy/common'
+import { getUserOpHash, NODE_CLIENT_URL } from '@biconomy-devx/common'
 import { hexConcat, arrayify, keccak256, hexZeroPad, defaultAbiCoder } from 'ethers/lib/utils'
 import {
   SessionKeyManagerModuleConfig,
@@ -9,9 +9,9 @@ import {
   StorageType,
   SessionParams
 } from './utils/Types'
-import { UserOperation, ChainId } from '@biconomy/core-types'
-import NodeClient from '@biconomy/node-client'
-import INodeClient from '@biconomy/node-client'
+import { UserOperation, ChainId } from '@biconomy-devx/core-types'
+import NodeClient from '@biconomy-devx/node-client'
+import INodeClient from '@biconomy-devx/node-client'
 import { SESSION_MANAGER_MODULE_ADDRESSES_BY_VERSION } from './utils/Constants'
 import { generateRandomHex } from './utils/Uid'
 import { BaseValidationModule } from './BaseValidationModule'

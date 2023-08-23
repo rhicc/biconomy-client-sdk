@@ -1,5 +1,5 @@
 import { Signer } from 'ethers'
-import { UserOperation } from '@biconomy/core-types'
+import { UserOperation } from '@biconomy-devx/core-types'
 import { Bytes } from 'ethers/lib/utils'
 
 export interface IValidationModule {

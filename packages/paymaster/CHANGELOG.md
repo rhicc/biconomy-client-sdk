@@ -15,12 +15,12 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# 3.1.0-alpha.0 (2023-07-24)
+# 2.0.0 (2023-07-24)
 
 VERSION bump only
 
 
-## 3.0.0-alpha.0 (2023-07-12)
+## 2.0.0 (2023-07-12)
 
 
 ### Bug Fixes
